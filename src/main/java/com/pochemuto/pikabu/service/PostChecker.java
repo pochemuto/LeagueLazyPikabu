@@ -56,7 +56,7 @@ public class PostChecker {
         for (int page = 0; page < maxPages; page++) {
             String url = String.format(pageUrl, page);
             LOGGER.debug("Fetching data from {}", url);
-            Connection connection = client.json(url);
+            Connection connection = client.ajax(url);
             PageResponse response = jsonMapper.readValue(connection.execute().body(), PageResponse.class);
             List<Post> pagePosts = pageParser.content(Jsoup.parse(response.getHtml()));
             if (pagePosts.size() != response.getPostIds().size()) {
@@ -71,8 +71,6 @@ public class PostChecker {
 
             Thread.sleep(requestIntervalMsec);
         }
-
-        commentService.addComment(3795034, "Похоже на игру слов. Но при чем тут таз...");
 
         LOGGER.info("Saving {} posts", newPosts.size());
         for (Post post : newPosts) {

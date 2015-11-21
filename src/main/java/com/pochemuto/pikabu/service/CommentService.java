@@ -79,7 +79,7 @@ public class CommentService {
     }
 
     public boolean addComment(long postId, String message) throws IOException {
-        Connection.Response response = webClient.connect(commentUrl).method(Connection.Method.POST)
+        Connection.Response response = webClient.ajax(commentUrl).method(Connection.Method.POST)
             .data("action", "create")
             .data("story_id", String.valueOf(postId))
             .data("desc", message)
@@ -87,10 +87,10 @@ public class CommentService {
             .data("parent_id", String.valueOf(0)).ignoreHttpErrors(true).execute();
 
         ResultResponse result = jsonMapper.readValue(response.body(), ResultResponse.class);
-        LOGGER.info(response.statusMessage());
-        LOGGER.info(response.body());
         if (result.isOk()) {
             LOGGER.info("Comment '{}' added to {}", message, postId);
+        } else {
+            LOGGER.error("Comment '{}' wasn't added: {}", message, response.body());
         }
         return result.isOk();
     }

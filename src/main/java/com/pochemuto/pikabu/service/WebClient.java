@@ -32,7 +32,7 @@ public class WebClient {
             .cookies(authData.getCookies());
     }
 
-    public Connection json(String url) {
+    public Connection ajax(String url) {
         return connect(url)
             .header("Accept", "application/json, text/javascript, */*; q=0.01")
             .header("X-Csrf-Token", authData.getSessionId())
