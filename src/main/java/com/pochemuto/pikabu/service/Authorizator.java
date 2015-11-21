@@ -1,13 +1,16 @@
 package com.pochemuto.pikabu.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pochemuto.pikabu.AuthData;
 import com.pochemuto.pikabu.exception.CannotFindSessionToken;
+import com.pochemuto.pikabu.response.ResultResponse;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,9 @@ import java.util.regex.Pattern;
 public class Authorizator {
     private static final Logger LOGGER = LoggerFactory.getLogger(Authorizator.class);
 
+    @Autowired
+    private ObjectMapper jsonMapper;
+
     @Value("${pikabu.auth.page}")
     private String authPage;
 
@@ -35,14 +41,14 @@ public class Authorizator {
     private String password;
 
     @Value("${pikabu.mainPage}")
-    private String threadsPage;
+    private String mainPage;
 
     private static final Pattern SESSION_PATTERN = Pattern.compile("([\"']?)sessionID\\1\\s*:\\s*([\"'])(?<session>[a-zA-Z0-9]*)\\2");
 
     public AuthData authorize() throws IOException {
         AuthData data = new AuthData();
         LOGGER.debug("Try to login as {}", username);
-        Connection.Response response = Jsoup.connect(threadsPage).execute();
+        Connection.Response response = Jsoup.connect(mainPage).execute();
         data.getCookies().putAll(response.cookies());
         String sessionId = extractSessionId(response);
         LOGGER.debug("found session id {}", sessionId);
@@ -57,7 +63,13 @@ public class Authorizator {
             .ignoreContentType(true)
             .execute();
 
-        System.out.println(response.body());
+        ResultResponse result = jsonMapper.readValue(response.body(), ResultResponse.class);
+
+        if (result.isOk()) {
+            LOGGER.info("Successfully logged in");
+        } else {
+            throw new RuntimeException("Authorization failed. Check credentials");
+        }
 
         data.setSessionId(sessionId);
         data.getCookies().putAll(response.cookies());

@@ -1,6 +1,6 @@
 package com.pochemuto.pikabu.service;
 
-import com.pochemuto.pikabu.dao.PikabuThread;
+import com.pochemuto.pikabu.dao.Post;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -17,38 +17,38 @@ import java.util.List;
  */
 @Service
 public class PageParser {
-    @Value("${pikabu.parser.selector.thread.block}")
+    @Value("${pikabu.parser.selector.post.block}")
     private String blockSelector;
 
-    @Value("${pikabu.parser.selector.thread.title}")
+    @Value("${pikabu.parser.selector.post.title}")
     private String titleSelector;
 
-    @Value("${pikabu.parser.selector.thread.description}")
+    @Value("${pikabu.parser.selector.post.description}")
     private String descriptionSelector;
 
-    @Value("${pikabu.parser.selector.thread.content}")
+    @Value("${pikabu.parser.selector.post.content}")
     private String contentSelector;
 
-    public List<PikabuThread> content(Document document) {
-        Elements threadBlockElements = document.select(blockSelector);
-        List<PikabuThread> threads = new ArrayList<>();
-        for (Element blockElement : threadBlockElements) {
-            PikabuThread thread = parseThread(blockElement);
-            threads.add(thread);
+    public List<Post> content(Document document) {
+        Elements postBlockElements = document.select(blockSelector);
+        List<Post> posts = new ArrayList<>();
+        for (Element blockElement : postBlockElements) {
+            Post post = parsePost(blockElement);
+            posts.add(post);
         }
-        return threads;
+        return posts;
     }
 
-    private PikabuThread parseThread(Element element) {
-        PikabuThread thread = new PikabuThread();
-        thread.setId(Long.parseLong(element.dataset().get("story-id")));
-        thread.setTitle(element.select(titleSelector).text());
-        thread.setContent(element.select(contentSelector).text());
-        thread.setDescription(element.select(descriptionSelector).text());
-        return thread;
+    private Post parsePost(Element element) {
+        Post post = new Post();
+        post.setId(Long.parseLong(element.dataset().get("story-id")));
+        post.setTitle(element.select(titleSelector).text());
+        post.setContent(element.select(contentSelector).text());
+        post.setDescription(element.select(descriptionSelector).text());
+        return post;
     }
 
-    private List<String> findUrls(PikabuThread thread) {
+    private List<String> findUrls(Post post) {
         return Collections.emptyList();
     }
 }

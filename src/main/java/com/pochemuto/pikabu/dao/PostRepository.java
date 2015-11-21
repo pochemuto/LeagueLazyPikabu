@@ -11,6 +11,6 @@ import java.util.List;
  * @date 17.11.2015
  */
 @Repository
-public interface PikabuThreadRepository extends JpaRepository<PikabuThread, Long> {
-    List<PikabuThread> findByIdIn(Collection<Long> ids);
+public interface PostRepository extends JpaRepository<Post, Long> {
+    List<Post> findByIdIn(Collection<Long> ids);
 }

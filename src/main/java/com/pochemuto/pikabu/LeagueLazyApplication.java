@@ -1,6 +1,6 @@
 package com.pochemuto.pikabu;
 
-import com.pochemuto.pikabu.service.NewThreadChecker;
+import com.pochemuto.pikabu.service.PostChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,14 +33,14 @@ public class LeagueLazyApplication implements CommandLineRunner {
 
     @Override
     public void run(String... strings) throws Exception {
-        LOGGER.info("Scheduled new thread checks with {} sec interval", checkIntervalSec);
+        LOGGER.info("Scheduled new post checks with {} sec interval", checkIntervalSec);
         Runnable runnable = () -> {
-            LOGGER.info("Checking new threads");
-            NewThreadChecker threadChecker = context.getBean(NewThreadChecker.class);
+            LOGGER.info("Checking new posts");
+            PostChecker postChecker = context.getBean(PostChecker.class);
             try {
-                threadChecker.check();
+                postChecker.check();
             } catch (Exception ex) {
-                LOGGER.error("Error when checking new threads", ex);
+                LOGGER.error("Error when checking new posts", ex);
             }
         };
         executorService.scheduleWithFixedDelay(runnable, 0, checkIntervalSec, TimeUnit.SECONDS);

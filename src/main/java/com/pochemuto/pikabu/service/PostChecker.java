@@ -1,8 +1,8 @@
 package com.pochemuto.pikabu.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pochemuto.pikabu.dao.PikabuThread;
-import com.pochemuto.pikabu.dao.PikabuThreadRepository;
+import com.pochemuto.pikabu.dao.Post;
+import com.pochemuto.pikabu.dao.PostRepository;
 import com.pochemuto.pikabu.response.PageResponse;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
  * @date 17.11.2015
  */
 @Service
-public class NewThreadChecker {
-    private static final Logger LOGGER = LoggerFactory.getLogger(NewThreadChecker.class);
+public class PostChecker {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostChecker.class);
 
     @Value("${pikabu.check.pagesUrl}")
     private String pageUrl;
@@ -42,7 +42,7 @@ public class NewThreadChecker {
     private WebClient client;
 
     @Autowired
-    private PikabuThreadRepository repository;
+    private PostRepository repository;
 
     @Autowired
     private ObjectMapper jsonMapper;
@@ -50,31 +50,34 @@ public class NewThreadChecker {
     @Autowired
     private CommentService commentService;
 
+
     public void check() throws Exception {
-        List<PikabuThread> newThreads = new ArrayList<>();
+        List<Post> newPosts = new ArrayList<>();
         for (int page = 0; page < maxPages; page++) {
             String url = String.format(pageUrl, page);
             LOGGER.debug("Fetching data from {}", url);
             Connection connection = client.json(url);
             PageResponse response = jsonMapper.readValue(connection.execute().body(), PageResponse.class);
-            List<PikabuThread> pageThreads = pageParser.content(Jsoup.parse(response.getHtml()));
-            if (pageThreads.size() != response.getThreadIds().size()) {
-                LOGGER.warn("Parsed threads is not equal json thread count. Json = {}, parsed = {}",
-                    response.getThreadIds().size(), pageThreads.size());
+            List<Post> pagePosts = pageParser.content(Jsoup.parse(response.getHtml()));
+            if (pagePosts.size() != response.getPostIds().size()) {
+                LOGGER.warn("Parsed posts count is not equal json posts count. Json = {}, parsed = {}",
+                    response.getPostIds().size(), pagePosts.size());
             }
 
-            List<Long> threadIds = pageThreads.stream().map(PikabuThread::getId).collect(Collectors.toList());
-            Set<PikabuThread> saved = new HashSet<>(threadIds.size());
-            repository.findByIdIn(threadIds).stream().forEach(saved::add);
-            pageThreads.stream().filter(t -> !saved.contains(t)).forEach(newThreads::add);
+            List<Long> postIds = pagePosts.stream().map(Post::getId).collect(Collectors.toList());
+            Set<Post> saved = new HashSet<>(postIds.size());
+            repository.findByIdIn(postIds).stream().forEach(saved::add);
+            pagePosts.stream().filter(t -> !saved.contains(t)).forEach(newPosts::add);
 
             Thread.sleep(requestIntervalMsec);
         }
 
-        LOGGER.info("Saving {} threads", newThreads.size());
-        for (PikabuThread thread : newThreads) {
-            commentService.addComment(thread);
+        commentService.addComment(3795034, "Похоже на игру слов. Но при чем тут таз...");
+
+        LOGGER.info("Saving {} posts", newPosts.size());
+        for (Post post : newPosts) {
+            commentService.addComment(post);
         }
-        repository.save(newThreads);
+        repository.save(newPosts);
     }
 }

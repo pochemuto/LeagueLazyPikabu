@@ -14,7 +14,7 @@ import java.util.List;
 public class PageResponse {
     @JsonProperty("news_arr")
     @JsonDeserialize(contentAs = Long.class)
-    private List<Long> threadIds;
+    private List<Long> postIds;
 
     @JsonProperty("news_hide")
     private boolean newsHide;
@@ -25,8 +25,8 @@ public class PageResponse {
     @JsonProperty("html")
     private String html;
 
-    public List<Long> getThreadIds() {
-        return threadIds;
+    public List<Long> getPostIds() {
+        return postIds;
     }
 
 
@@ -45,7 +45,7 @@ public class PageResponse {
     @Override
     public String toString() {
         return "AjaxResponse{" +
-            "threadIds=" + threadIds +
+            "postIds=" + postIds +
             ", newsHide=" + newsHide +
             ", isFeedOverflow=" + isFeedOverflow +
             ", html='" + html + '\'' +

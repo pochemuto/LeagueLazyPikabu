@@ -12,7 +12,7 @@ import java.util.List;
  * @date 17.11.2015
  */
 @Entity
-public class PikabuThread {
+public class Post {
     @Id
     private long id;
 
@@ -82,7 +82,7 @@ public class PikabuThread {
 
     @Override
     public String toString() {
-        return "PikabuThread{" +
+        return "Post{" +
             "id=" + id +
             ", urls='" + urls + '\'' +
             ", title='" + title + '\'' +
@@ -94,11 +94,11 @@ public class PikabuThread {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PikabuThread)) return false;
+        if (!(o instanceof Post)) return false;
 
-        PikabuThread thread = (PikabuThread) o;
+        Post post = (Post) o;
 
-        return id == thread.id;
+        return id == post.id;
 
     }
 
