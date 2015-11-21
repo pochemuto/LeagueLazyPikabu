@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -53,7 +53,7 @@ public class PostChecker {
 
     public void check() throws Exception {
         List<Post> newPosts = new ArrayList<>();
-        for (int page = 0; page < maxPages; page++) {
+        for (int page = 1; page <= maxPages; page++) {
             String url = String.format(pageUrl, page);
             LOGGER.debug("Fetching data from {}", url);
             Connection connection = client.ajax(url);
@@ -65,17 +65,28 @@ public class PostChecker {
             }
 
             List<Long> postIds = pagePosts.stream().map(Post::getId).collect(Collectors.toList());
-            Set<Post> saved = new HashSet<>(postIds.size());
-            repository.findByIdIn(postIds).stream().forEach(saved::add);
-            pagePosts.stream().filter(t -> !saved.contains(t)).forEach(newPosts::add);
+            int newInPageCount = 0;
+            Map<Long, Post> saved = new HashMap<>(postIds.size());
+            repository.findByIdIn(postIds).stream().forEach(p -> saved.put(p.getId(), p));
+            for (Post post : pagePosts) {
+                Post savedPost = saved.get(post.getId());
+                if (savedPost == null || savedPost.isCommented()) {
+                    continue;
+                }
 
+                newPosts.add(post);
+                newInPageCount++;
+            }
+            if (newInPageCount == 0) {
+                // no new posts
+                LOGGER.info("No new posts on page {}, breaking", page);
+                break;
+            }
             Thread.sleep(requestIntervalMsec);
         }
-
+        LOGGER.info("Total commented posts: {}", repository.countByCommentedIsTrue());
         LOGGER.info("Saving {} posts", newPosts.size());
-        for (Post post : newPosts) {
-            commentService.addComment(post);
-        }
         repository.save(newPosts);
+        newPosts.stream().filter(Post::hasUrls).forEach(commentService::addComment);
     }
 }

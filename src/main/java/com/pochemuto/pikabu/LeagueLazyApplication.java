@@ -23,7 +23,8 @@ public class LeagueLazyApplication implements CommandLineRunner {
         SpringApplication.run(LeagueLazyApplication.class, args);
     }
 
-    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
+        r -> new Thread(r, "post-checker"));
 
     @Autowired
     private ApplicationContext context;
