@@ -11,7 +11,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @PropertySource("classpath:/configuration.properties")
-@PropertySource(value = "classpath:/pikabu.properties", ignoreResourceNotFound = true)
+@PropertySource(value = "file:pikabu.properties", ignoreResourceNotFound = true)
 public class AppConfig {
 
     @Bean

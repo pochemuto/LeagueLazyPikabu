@@ -79,7 +79,7 @@ public class CommentService {
                     }
                 }
             } catch (InterruptedException e) {
-                LOGGER.error("interrupted", e);
+                LOGGER.info("interrupted");
             } catch (Throwable t) {
                 LOGGER.error("error in commenting thread", t);
             }
